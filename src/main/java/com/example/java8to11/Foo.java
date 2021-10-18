@@ -4,6 +4,7 @@ import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntConsumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -12,7 +13,33 @@ public class Foo {
 
 	public static void main(String[] args) {
 		// Foo.runSomeThing();
-		Foo.runFunction();
+		// Foo.runFunction();
+		Foo.run();
+	}
+
+	private static void run() {
+		int baseNumber = 0;
+
+		// 로컬 클래스
+		class LocalClass {
+			void printBaseNumber() {
+				int baseNumber = 10;
+				System.out.println(baseNumber);
+			}
+		}
+
+		// 익명 클래스
+		Consumer<Integer> consumer = new Consumer<Integer>() {
+			@Override
+			public void accept(Integer baseNumber) {
+				System.out.println(baseNumber);
+			}
+		};
+
+		// 람다
+		IntConsumer printBaseNumber = (i) -> System.out.println(i + baseNumber);
+
+
 	}
 
 	public static void runFunction() {
