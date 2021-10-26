@@ -5,6 +5,7 @@ public class OnlineClass {
 	private Integer id;
 	private String title;
 	private boolean closed;
+	private Progress progress;
 
 	public OnlineClass(Integer id, String title, boolean closed) {
 		this.id = id;
