@@ -1,5 +1,7 @@
 package com.example.java8to11;
 
+import java.util.Optional;
+
 public class OnlineClass {
 
 	private Integer id;
@@ -35,5 +37,9 @@ public class OnlineClass {
 
 	public void setClosed(boolean closed) {
 		this.closed = closed;
+	}
+
+	public Optional<Progress> getProgress() {
+		return Optional.empty();
 	}
 }

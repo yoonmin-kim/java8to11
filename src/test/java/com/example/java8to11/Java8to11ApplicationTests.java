@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Spliterator;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -52,7 +53,7 @@ class Java8to11ApplicationTests {
 
 	@Test
 	@DisplayName("Stream 소개")
-	public void streamTest() {
+	void streamTest() {
 		List<String> names = new ArrayList<>();
 		names.add("yoonmin");
 		names.add("kim");
@@ -81,7 +82,7 @@ class Java8to11ApplicationTests {
 
 	@Test
 	@DisplayName("Stream API")
-	public void steamAPI() {
+	void steamAPI() {
 		List<OnlineClass> springClasses = new ArrayList<>();
 		springClasses.add(new OnlineClass(1, "spring boot", true));
 		springClasses.add(new OnlineClass(2, "spring data jpa", true));
@@ -139,6 +140,42 @@ class Java8to11ApplicationTests {
 			.collect(Collectors.toList());
 		springTitles.forEach(System.out::println);
 
+	}
+
+	@Test
+	@DisplayName("Optional API 사용")
+	void optionalTest() {
+		List<OnlineClass> onlineClass = new ArrayList<>();
+		onlineClass.add(new OnlineClass(1, "spring boot", false));
+		onlineClass.add(new OnlineClass(5, "rest api development", false));
+
+		Optional<OnlineClass> findClass = onlineClass.stream()
+			.filter(oc -> oc.getTitle().startsWith("jpa"))
+			.findFirst();
+
+		System.out.println(findClass.isPresent());
+		// if로 감쌀필요 없이 ifPresent를 사용하면 값이 있을때만 실행함
+		findClass.ifPresent(oc -> System.out.println(oc.getTitle()));
+
+		// 값을 꺼내야할때(값이 없으면 NoSuchElementException 발생)
+		OnlineClass onlineClass1 = findClass.get();
+		// if로 감쌀필요 없이 값을 꺼내야할때
+		OnlineClass aClass1 = findClass.orElse(getDefaultClass()); // 값이 있든 없든 getDefaultClass() 실행
+		OnlineClass aClass2 = findClass.orElseGet(
+			Java8to11ApplicationTests::getDefaultClass); // 값이 없을때만 getDefaultClass() 실행
+		OnlineClass aClass3 = findClass.orElseThrow(
+			() -> new IllegalStateException()); // 값이 없을때 exception 발생 원하는 exception 을 supplier 로 설정할 수 있다
+
+		// Optional 의 map
+		Optional<String> optionalTitle1 = findClass.map(OnlineClass::getTitle);
+		Optional<Optional<Progress>> progress1 = findClass.map(
+			OnlineClass::getProgress); // Optional 을 반환하면 값을 찾기위해 2번 까야됨
+		Optional<Progress> progress = findClass.flatMap(OnlineClass::getProgress); // flatMap() 을 사용하면 한방에 가능
+	}
+
+	public static OnlineClass getDefaultClass() {
+		System.out.println("getDefaultClass start");
+		return new OnlineClass(1, "jpa", false);
 	}
 
 }
