@@ -154,7 +154,7 @@ class Java8to11ApplicationTests {
 			.findFirst();
 
 		System.out.println(findClass.isPresent());
-		// if로 감쌀필요 없이 ifPresent를 사용하면 값이 있을때만 실행함
+		// if로 감쌀필요 없이 ifPresent 를 사용하면 값이 있을때만 실행함
 		findClass.ifPresent(oc -> System.out.println(oc.getTitle()));
 
 		// 값을 꺼내야할때(값이 없으면 NoSuchElementException 발생)
