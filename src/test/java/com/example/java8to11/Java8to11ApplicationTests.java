@@ -1,11 +1,24 @@
 package com.example.java8to11;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.Period;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Optional;
 import java.util.Spliterator;
+import java.util.TimeZone;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -178,4 +191,71 @@ class Java8to11ApplicationTests {
 		return new OnlineClass(1, "jpa", false);
 	}
 
+	@Test
+	@DisplayName("Date 와 Time API, (Instant, ZonedDateTime, LocalDateTime)")
+	void dateTimeTest() {
+		Instant instant = Instant.now();
+		System.out.println("instant = " + instant); // 기준시 UTC, GMT
+
+		ZoneId zone = ZoneId.systemDefault(); // 해당 시스템의 위치
+		System.out.println("zone = " + zone);
+		ZonedDateTime zonedDateTime = instant.atZone(zone); // zone 으로 설정한 위치 기준으로
+		System.out.println("zonedDateTime = " + zonedDateTime);
+
+		LocalDateTime now = LocalDateTime.now(); // 해당 시스템의 위치 기준으로
+		System.out.println("now = " + now);
+		LocalDateTime.of(1994, Month.OCTOBER, 26, 12, 0, 0);
+
+		ZonedDateTime seoulDateTime = ZonedDateTime.now(ZoneId.of("Asia/Seoul"));
+	}
+
+	@Test
+	@DisplayName("Date 와 Time API, (Period, Duration)")
+	void periodDurationTest() {
+		LocalDate today = LocalDate.now();
+		LocalDate myBirthDay = LocalDate.of(1994, Month.OCTOBER, 26);
+
+		// Period 사람친숙 기간
+		Period between = Period.between(today, myBirthDay);
+		System.out.println("between.getDays() = " + between.getDays());
+
+		Period until = today.until(myBirthDay);
+		System.out.println("until.get(ChronoUnit.DAYS) = " + until.get(ChronoUnit.DAYS));
+
+		// Duration 기계친숙 기간
+		Instant now = Instant.now();
+		Instant plus = now.plus(10, ChronoUnit.SECONDS);
+		Duration betweenNowPlus = Duration.between(now, plus);
+		System.out.println("betweenNowPlus = " + betweenNowPlus.getSeconds());
+
+		LocalDateTime localDateTime = LocalDateTime.now();
+		DateTimeFormatter MMddyyyy = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+		System.out.println(localDateTime.format(MMddyyyy));
+
+		LocalDate parse = LocalDate.parse("10/26/1994", MMddyyyy);
+		System.out.println("parse = " + parse);
+
+		// NEW API 와 OLD API 는 서로 왔다갔다 할 수 있음
+		Date date = new Date();
+		Instant instant = date.toInstant();
+		Date newDate = Date.from(instant);
+
+		GregorianCalendar gregorianCalendar = new GregorianCalendar();
+		ZonedDateTime zonedDateTime = gregorianCalendar.toInstant().atZone(ZoneId.systemDefault());
+		System.out.println("zonedDateTime = " + zonedDateTime);
+		GregorianCalendar from = GregorianCalendar.from(zonedDateTime);
+
+		ZoneId zoneId = TimeZone.getTimeZone("PTS").toZoneId();
+		TimeZone timeZone = TimeZone.getTimeZone(zoneId);
+
+		// 주의점 NEW API 는 Immutable 하기 때문에 연산 후 값을 꺼내써야한다
+		// (예시)
+		LocalDateTime exampleNow = LocalDateTime.now();
+		System.out.println("exampleNow = " + exampleNow);
+		LocalDateTime plusTime = exampleNow.plus(10, ChronoUnit.DAYS);
+		System.out.println("exampleNow = " + exampleNow);
+		System.out.println("plusTime = " + plusTime);
+
+
+	}
 }
