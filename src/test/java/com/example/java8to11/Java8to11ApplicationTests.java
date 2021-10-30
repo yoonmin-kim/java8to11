@@ -11,6 +11,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
@@ -19,6 +20,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Spliterator;
 import java.util.TimeZone;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -257,5 +267,60 @@ class Java8to11ApplicationTests {
 		System.out.println("plusTime = " + plusTime);
 
 
+	}
+
+	@Test
+	@DisplayName("Executors")
+	void executorsTest() {
+		ExecutorService es = Executors.newSingleThreadExecutor();
+		es.submit(() -> System.out.println(Thread.currentThread().getName() + "kim"));
+		es.submit(() -> System.out.println(Thread.currentThread().getName() + "yoon"));
+		es.submit(() -> System.out.println(Thread.currentThread().getName() + "min"));
+
+		ExecutorService es2 = Executors.newFixedThreadPool(2);
+		es2.submit(() -> System.out.println(Thread.currentThread().getName() + "kim"));
+		es2.submit(() -> System.out.println(Thread.currentThread().getName() + "yoon"));
+		es2.submit(() -> System.out.println(Thread.currentThread().getName() + "min"));
+	}
+
+	/**
+	 * ScheduledExecutorService
+	 * 딜레이, 기간 을 줄수있는 Executors
+	 */
+	public static void main(String[] args) {
+		ScheduledExecutorService ses = Executors.newScheduledThreadPool(2);
+		// ses.schedule(() -> System.out.println(Thread.currentThread().getName() + "schedule"), 1L, TimeUnit.SECONDS);
+		ses.scheduleAtFixedRate(() -> System.out.println(Thread.currentThread().getName() + "schedule"), 1, 2,
+			TimeUnit.SECONDS);
+		// ses.execute(() -> System.out.println(Thread.currentThread().getName() + "schedule"));
+	}
+
+	@Test
+	@DisplayName("Callable")
+	void callableTest() throws ExecutionException, InterruptedException {
+		ExecutorService executorService = Executors.newFixedThreadPool(3);
+
+		Callable<String> callable1 = () -> {
+			Thread.sleep(2000L);
+			return "kim";
+		};
+		Callable<String> callable2 = () -> {
+			Thread.sleep(3000L);
+			return "yoon";
+		};
+		Callable<String> callable3 = () -> {
+			Thread.sleep(1000L);
+			return "min";
+		};
+
+		List<Future<String>> futures = executorService.invokeAll(Arrays.asList(callable1, callable2, callable3));
+		for (Future<String> future : futures) {
+			System.out.println(future.get());
+		}
+
+		String s = executorService.invokeAny(Arrays.asList(callable1, callable2, callable3));
+		System.out.println("s = " + s);
+
+		executorService.shutdown();
 	}
 }
