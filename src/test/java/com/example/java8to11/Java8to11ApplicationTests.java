@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.Spliterator;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -323,4 +324,29 @@ class Java8to11ApplicationTests {
 
 		executorService.shutdown();
 	}
+
+	@Test
+	@DisplayName("CompletableFuture1")
+	void completableFutureTest() throws ExecutionException, InterruptedException {
+		// ExecutorService executorService = Executors.newFixedThreadPool(1);
+		// Future<String> submit = executorService.submit(() -> "test");
+		// submit.get(); // 외부에서 완료처리 불가능
+
+		// 일반 future 와 다르게 콜백을 미리 정의하고 비동기 처리가 가능하다
+		ExecutorService executorService = Executors.newFixedThreadPool(4);
+		CompletableFuture<String> future = CompletableFuture.supplyAsync(
+			() -> {
+				System.out.println(Thread.currentThread().getName());
+				return "test";
+			}, executorService).thenApplyAsync(s -> s.toUpperCase(), executorService);
+
+		// future.complete("test"); // 외부에서 완료처리가 가능
+		System.out.println(future.get()); // get()은 값이 넘어올때까지 대기하는 건 똑같다
+		// CompletableFuture<Void> runAsync = CompletableFuture.runAsync(
+		// 	() -> System.out.println("1 - " + Thread.currentThread().getName()));
+		//
+		// CompletableFuture<String> supplyAsync = CompletableFuture.supplyAsync(() -> "2 - " + Thread.currentThread().getName());
+		// System.out.println(supplyAsync.get());
+	}
+
 }
