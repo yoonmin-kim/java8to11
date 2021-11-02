@@ -349,4 +349,91 @@ class Java8to11ApplicationTests {
 		// System.out.println(supplyAsync.get());
 	}
 
+	@Test
+	@DisplayName("CompletableFuture2")
+	void CompletableFutureTest2() throws ExecutionException, InterruptedException {
+		CompletableFuture<String> hello = CompletableFuture.supplyAsync(() -> {
+			System.out.println(Thread.currentThread().getName());
+			return "Hello";
+		});
+		// 두 Future 간에 의존성이 있는 경우, A하고 곧바로 B하고
+		CompletableFuture<String> future = hello.thenCompose(this::getWorld);
+		System.out.println(future.get());
+
+
+		CompletableFuture<String> world = CompletableFuture.supplyAsync(() -> {
+			System.out.println(Thread.currentThread().getName());
+			return "World";
+		});
+		// 서로 관계가 없는 Future 를 둘다 호출하고 둘다 결과가 도착했을때 뭔가 실행하고 싶은 경우
+		CompletableFuture<String> thenCombine = hello.thenCombine(world, (h, w) -> h + " " + w);
+		System.out.println(thenCombine.get());
+
+		// Future 가 두개 이상일 때, 모든 서브 task 를 합쳐서 실행하는 방법
+		CompletableFuture<Void> voidCompletableFuture = CompletableFuture.allOf(hello, world)
+			.thenAccept(System.out::println); // 여러개의  Future 의 반환이 다 다를 수 있기 때문에 결과값 무의미
+
+		List<CompletableFuture<String>> futures = Arrays.asList(hello, world);
+		CompletableFuture[] completableFutures = futures.toArray(new CompletableFuture[futures.size()]);
+
+		CompletableFuture<List<String>> results = CompletableFuture.allOf(completableFutures).thenApply(v -> {
+			return futures.stream().map(CompletableFuture::join).collect(Collectors.toList());
+		});
+
+		results.get().forEach(System.out::println);
+
+		// allOf 와 다르게 아무거나 하나라도 결과가 올 경우
+		CompletableFuture<Void> voidCompletableFuture1 = CompletableFuture.anyOf(hello, world)
+			.thenAccept(System.out::println);
+	}
+
+	@Test
+	@DisplayName("CompletableFuture 에러 처리")
+	void CompletableFutureException() throws ExecutionException, InterruptedException {
+
+		boolean isException = true;
+
+		CompletableFuture<String> hello = CompletableFuture.supplyAsync(() -> {
+
+			if (isException) {
+				throw new IllegalArgumentException();
+			}
+
+			System.out.println(Thread.currentThread().getName());
+			return "Hello";
+		}).exceptionally(ex -> { // 에러가 발생할 경우 처리할 경우
+			System.out.println(ex);
+			return "Error!";
+		});
+
+		System.out.println(hello.get());
+
+		CompletableFuture<String> world = CompletableFuture.supplyAsync(() -> {
+
+			if (isException) {
+				throw new IllegalArgumentException();
+			}
+
+			System.out.println(Thread.currentThread().getName());
+			return "World";
+		}).handle((h, ex) -> { // 정상적인 값과 에러를 함께 처리할 경우
+			if(ex != null){
+				System.out.println(ex);
+				return "Error!";
+			}
+			return h;
+		});
+
+		System.out.println(world.get());
+
+
+	}
+
+	private CompletableFuture<String> getWorld(String message) {
+		return CompletableFuture.supplyAsync(() -> {
+			System.out.println(Thread.currentThread().getName());
+			return message + " World";
+		});
+	}
+
 }
