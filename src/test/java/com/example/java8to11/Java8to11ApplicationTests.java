@@ -18,6 +18,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Spliterator;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
@@ -32,6 +33,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.DisplayName;
@@ -436,4 +438,22 @@ class Java8to11ApplicationTests {
 		});
 	}
 
+
+	@Test
+	@DisplayName("배열 병렬 정렬")
+	void arraySortTest() {
+		int size = 1500;
+		int[] array = new int[size];
+		Random random = new Random();
+
+		IntStream.range(0, size).forEach(i -> array[i] = random.nextInt());
+		long startTime = System.nanoTime();
+		Arrays.sort(array);
+		System.out.println(System.nanoTime() - startTime);
+
+		IntStream.range(0, size).forEach(i -> array[i] = random.nextInt());
+		long startTime2 = System.nanoTime();
+		Arrays.parallelSort(array);
+		System.out.println(System.nanoTime() - startTime2);
+	}
 }
